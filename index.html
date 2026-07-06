@@ -484,6 +484,48 @@
             font-size: 20px;
         }
 
+        /* 数据预览区域 */
+        .data-preview {
+            display: none;
+            margin-top: 20px;
+            padding: 16px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.06);
+            position: relative;
+            z-index: 1;
+        }
+        .data-preview.active {
+            display: block;
+        }
+        .data-preview textarea {
+            width: 100%;
+            min-height: 120px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            color: #b8c7e0;
+            font-size: 12px;
+            padding: 10px;
+            font-family: monospace;
+            resize: vertical;
+            outline: none;
+        }
+        .data-preview .copy-btn {
+            margin-top: 10px;
+            padding: 8px 20px;
+            background: rgba(168, 85, 247, 0.2);
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            border-radius: 10px;
+            color: #c4b5fd;
+            cursor: pointer;
+            font-size: 13px;
+            transition: 0.2s;
+        }
+        .data-preview .copy-btn:hover {
+            background: rgba(168, 85, 247, 0.3);
+        }
+
         ::-webkit-scrollbar {
             width: 4px;
         }
@@ -722,6 +764,13 @@
 
         </form>
 
+        <!-- 数据预览区（提交成功后显示） -->
+        <div class="data-preview" id="dataPreview">
+            <label style="font-size:13px;color:rgba(255,255,255,0.6);">📋 报名数据（复制后手动发送至 cqh163yh@163.com）</label>
+            <textarea id="dataTextarea" readonly></textarea>
+            <button class="copy-btn" id="copyDataBtn"><i class="fas fa-copy"></i> 复制数据</button>
+        </div>
+
         <div class="footer">
             <span class="org">主办：北京市出版版权协会 · 北京市朝阳区人民政府</span>
             <br />
@@ -734,6 +783,15 @@
         (function() {
             'use strict';
 
+            // ============================================================
+            // 配置区：请替换为你的 Formspree 表单端点（免费注册即可获得）
+            // 若留空，则仅提供手动复制功能，不会自动发送邮件。
+            // ============================================================
+            const CONFIG = {
+                // 示例：'https://formspree.io/f/xyzabcde'
+                formspreeEndpoint: ''  // <-- 在这里填写你的 Formspree 表单 ID
+            };
+
             const form = document.getElementById('signupForm');
             const toast = document.getElementById('toast');
             const toastMsg = document.getElementById('toastMsg');
@@ -742,6 +800,9 @@
             const submitBtn = document.getElementById('submitBtn');
             const introText = document.getElementById('teamIntro');
             const introCount = document.getElementById('introCount');
+            const dataPreview = document.getElementById('dataPreview');
+            const dataTextarea = document.getElementById('dataTextarea');
+            const copyDataBtn = document.getElementById('copyDataBtn');
 
             // ===== 倒计时 =====
             function updateCountdown() {
@@ -815,7 +876,7 @@
                 item.scrollIntoView({ behavior: 'smooth', block: 'center' });
             });
 
-            // 第一个成员的移除按钮隐藏（不可删除，但无队长标记）
+            // 第一个成员的移除按钮隐藏（不可删除）
             const firstRemove = memberContainer.querySelector('.remove-member');
             if (firstRemove) firstRemove.style.display = 'none';
 
@@ -836,13 +897,21 @@
                 clearTimeout(toastTimer);
                 toastTimer = setTimeout(() => {
                     toast.classList.remove('show');
-                }, 3500);
+                }, 5000);
             }
 
-            // ===== 表单验证 & 提交 =====
+            // ===== 复制数据 =====
+            copyDataBtn.addEventListener('click', function() {
+                dataTextarea.select();
+                document.execCommand('copy');
+                showToast('✅ 数据已复制到剪贴板', 'success');
+            });
+
+            // ===== 表单提交 =====
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
 
+                // ----- 基础字段验证 -----
                 const name = document.getElementById('name').value.trim();
                 const phone = document.getElementById('phone').value.trim();
                 const school = document.getElementById('school').value.trim();
@@ -865,6 +934,7 @@
                 if (!agreeContact) { showToast('请同意主办方联系授权', 'error'); return; }
                 if (!agreeDisplay) { showToast('请同意作品宣传展示条款', 'error'); return; }
 
+                // ----- 验证团队成员 -----
                 const memberItems = memberContainer.querySelectorAll('.member-item');
                 const membersData = [];
                 let memberValid = true;
@@ -908,6 +978,7 @@
                     return;
                 }
 
+                // ----- 构建数据对象 -----
                 const formData = {
                     personal: {
                         name,
@@ -932,16 +1003,66 @@
                     submittedAt: new Date().toISOString(),
                 };
 
+                // 转为 JSON 字符串
+                const jsonData = JSON.stringify(formData, null, 2);
+
+                // ----- 显示数据预览 -----
+                dataTextarea.value = jsonData;
+                dataPreview.classList.add('active');
+
+                // 禁用提交按钮，防止重复提交
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = '<span class="spinner"></span> 提交中...';
 
-                setTimeout(() => {
-                    console.log('📦 报名数据:', JSON.stringify(formData, null, 2));
-                    showToast('🎉 报名成功！我们将在48小时内与你联系', 'success');
+                // ----- 尝试发送邮件（如果配置了 endpoint） -----
+                const endpoint = CONFIG.formspreeEndpoint.trim();
+                let emailSent = false;
+
+                if (endpoint) {
+                    // 使用 Formspree 发送
+                    fetch(endpoint, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            message: jsonData,
+                            _subject: '京喜造梦间 Game Jam 报名数据'
+                        })
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            emailSent = true;
+                            showToast('🎉 报名成功！数据已自动发送至 cqh163yh@163.com', 'success');
+                        } else {
+                            // 邮件发送失败，但报名数据已生成
+                            showToast('⚠️ 自动发送失败，请手动复制下方数据发送邮件', 'error');
+                        }
+                    })
+                    .catch(() => {
+                        showToast('⚠️ 自动发送失败，请手动复制下方数据发送邮件', 'error');
+                    })
+                    .finally(() => {
+                        // 恢复按钮状态
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = '<i class="fas fa-check"></i> 已报名';
+                        // 滚动到数据预览区
+                        dataPreview.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    });
+                } else {
+                    // 未配置 endpoint，仅提供手动复制
+                    showToast('📋 报名数据已生成，请复制下方内容发送邮件', 'success');
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = '<i class="fas fa-check"></i> 已报名';
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                }, 1200);
+                    dataPreview.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+
+                // 滚动到顶部显示 toast 提示（已由 showToast 自动显示）
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+
+                // 在控制台输出数据，方便调试
+                console.log('📦 报名数据:', formData);
             });
 
             // ===== 手机号仅数字 =====
@@ -950,9 +1071,6 @@
                     this.value = this.value.replace(/\D/g, '');
                 });
             });
-
-            // ===== 移除所有“队长”标记（初始化无标记，动态添加也无标记） =====
-            // 无需额外操作，因为默认第一个成员没有特殊标记，动态添加的也没有。
 
         })();
     </script>
