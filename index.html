@@ -766,7 +766,7 @@
 
         <!-- 数据预览区（提交成功后显示） -->
         <div class="data-preview" id="dataPreview">
-            <label style="font-size:13px;color:rgba(255,255,255,0.6);">📋 报名数据（复制后手动发送至 cqh163yh@163.com）</label>
+            <label style="font-size:13px;color:rgba(255,255,255,0.6);">📋 报名数据（自动发送至 chenqianhan@sdbq.org，若失败请手动复制发送）</label>
             <textarea id="dataTextarea" readonly></textarea>
             <button class="copy-btn" id="copyDataBtn"><i class="fas fa-copy"></i> 复制数据</button>
         </div>
@@ -784,12 +784,10 @@
             'use strict';
 
             // ============================================================
-            // 配置区：请替换为你的 Formspree 表单端点（免费注册即可获得）
-            // 若留空，则仅提供手动复制功能，不会自动发送邮件。
+            // 配置区：已更新为您的 Formspree 端点，邮件将发送至您绑定的邮箱
             // ============================================================
             const CONFIG = {
-                // 示例：'https://formspree.io/f/xyzabcde'
-                formspreeEndpoint: 'https://formspree.io/f/mzdloonq'  // <-- 在这里填写你的 Formspree 表单 ID
+                formspreeEndpoint: 'https://formspree.io/f/mzdloonq'  // 已替换为您提供的表单ID
             };
 
             const form = document.getElementById('signupForm');
@@ -1014,12 +1012,10 @@
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = '<span class="spinner"></span> 提交中...';
 
-                // ----- 尝试发送邮件（如果配置了 endpoint） -----
+                // ----- 尝试发送邮件（使用配置的 Formspree 端点） -----
                 const endpoint = CONFIG.formspreeEndpoint.trim();
-                let emailSent = false;
 
                 if (endpoint) {
-                    // 使用 Formspree 发送
                     fetch(endpoint, {
                         method: 'POST',
                         headers: {
@@ -1033,10 +1029,8 @@
                     })
                     .then(response => {
                         if (response.ok) {
-                            emailSent = true;
-                            showToast('🎉 报名成功！数据已自动发送至 cqh163yh@163.com', 'success');
+                            showToast('🎉 报名成功！数据已自动发送至 chenqianhan@sdbq.org', 'success');
                         } else {
-                            // 邮件发送失败，但报名数据已生成
                             showToast('⚠️ 自动发送失败，请手动复制下方数据发送邮件', 'error');
                         }
                     })
@@ -1044,24 +1038,20 @@
                         showToast('⚠️ 自动发送失败，请手动复制下方数据发送邮件', 'error');
                     })
                     .finally(() => {
-                        // 恢复按钮状态
                         submitBtn.disabled = false;
                         submitBtn.innerHTML = '<i class="fas fa-check"></i> 已报名';
-                        // 滚动到数据预览区
                         dataPreview.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     });
                 } else {
-                    // 未配置 endpoint，仅提供手动复制
+                    // 如果没有配置端点（理论上不会发生，因为已配置）
                     showToast('📋 报名数据已生成，请复制下方内容发送邮件', 'success');
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = '<i class="fas fa-check"></i> 已报名';
                     dataPreview.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }
 
-                // 滚动到顶部显示 toast 提示（已由 showToast 自动显示）
+                // 滚动到顶部显示 toast 提示
                 window.scrollTo({ top: 0, behavior: 'smooth' });
-
-                // 在控制台输出数据，方便调试
                 console.log('📦 报名数据:', formData);
             });
 
