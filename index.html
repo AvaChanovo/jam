@@ -272,9 +272,9 @@
                 <div class="form-group"><label>微信号</label><input type="text" class="form-control" id="wechat" placeholder="请输入微信号" /></div>
                 <div class="form-group"><label>QQ号</label><input type="text" class="form-control" id="qq" placeholder="请输入QQ号" /></div>
 
-                <!-- 团队属性（替换原来的所属院校） -->
+                <!-- 身份属性（原“团队属性”） -->
                 <div class="form-group">
-                    <label>团队属性 <span class="required">*</span></label>
+                    <label>身份属性 <span class="required">*</span></label>
                     <div class="radio-group">
                         <label class="radio-item">
                             <input type="radio" name="teamType" value="student" required />
@@ -285,7 +285,7 @@
                             独立开发者
                         </label>
                     </div>
-                    <div class="hint">请选择您的团队身份</div>
+                    <div class="hint">请选择您的身份属性</div>
                 </div>
             </div>
 
@@ -469,13 +469,13 @@
                 const agreeContact = document.getElementById('agreeContact').checked;
                 const agreeDisplay = document.getElementById('agreeDisplay').checked;
 
-                // 团队属性（单选）
+                // 身份属性（单选）
                 const teamTypeRadio = document.querySelector('input[name="teamType"]:checked');
                 const teamType = teamTypeRadio ? teamTypeRadio.value : '';
 
                 if (!name) { showToast('请填写姓名', 'error'); return; }
                 if (!phone || !/^1\d{10}$/.test(phone)) { showToast('请输入正确的11位手机号', 'error'); return; }
-                if (!teamType) { showToast('请选择团队属性', 'error'); return; }
+                if (!teamType) { showToast('请选择身份属性', 'error'); return; }
                 if (!teamName) { showToast('请填写团队名称', 'error'); return; }
                 if (!teamSize || parseInt(teamSize) < 1) { showToast('请填写有效的团队人数', 'error'); return; }
                 if (!leaderName) { showToast('请填写队长姓名', 'error'); return; }
@@ -505,7 +505,7 @@
                         phone, 
                         wechat: document.getElementById('wechat').value.trim(), 
                         qq: document.getElementById('qq').value.trim(), 
-                        teamType // 替换原来的 school
+                        teamType // 存储身份属性值
                     },
                     team: { 
                         name: teamName, 
