@@ -43,6 +43,51 @@
         .form-control:focus { border-color: #a855f7; background: rgba(255, 255, 255, 0.08); box-shadow: 0 0 0 4px rgba(168, 85, 247, 0.12); }
         .form-control::placeholder { color: rgba(255, 255, 255, 0.25); font-weight: 300; font-size: 14px; }
         .form-control.textarea { min-height: 80px; resize: vertical; line-height: 1.6; }
+
+        /* ---- 单选按钮组 ---- */
+        .radio-group {
+            display: flex;
+            gap: 20px;
+            padding-top: 4px;
+        }
+        .radio-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            font-size: 15px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        .radio-item input[type="radio"] {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.04);
+            transition: all 0.2s;
+            flex-shrink: 0;
+            position: relative;
+            cursor: pointer;
+        }
+        .radio-item input[type="radio"]:checked {
+            border-color: #a855f7;
+            background: #a855f7;
+            box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.2);
+        }
+        .radio-item input[type="radio"]:checked::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #fff;
+        }
+
         .member-list { display: flex; flex-direction: column; gap: 14px; margin-top: 12px; margin-bottom: 12px; }
         .member-item { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 16px; padding: 14px 14px 10px; position: relative; transition: all 0.2s; }
         .member-item .member-row { display: flex; gap: 10px; flex-wrap: wrap; }
@@ -226,7 +271,22 @@
                 <div class="form-group"><label>手机号 <span class="required">*</span></label><input type="tel" class="form-control" id="phone" placeholder="请输入手机号" required /></div>
                 <div class="form-group"><label>微信号</label><input type="text" class="form-control" id="wechat" placeholder="请输入微信号" /></div>
                 <div class="form-group"><label>QQ号</label><input type="text" class="form-control" id="qq" placeholder="请输入QQ号" /></div>
-                <div class="form-group"><label>所属院校 <span class="required">*</span></label><input type="text" class="form-control" id="school" placeholder="例：中国传媒大学 或 独立开发者" required /><div class="hint">独立开发者请填写「独立开发者」</div></div>
+
+                <!-- 团队属性（替换原来的所属院校） -->
+                <div class="form-group">
+                    <label>团队属性 <span class="required">*</span></label>
+                    <div class="radio-group">
+                        <label class="radio-item">
+                            <input type="radio" name="teamType" value="student" required />
+                            高校学生
+                        </label>
+                        <label class="radio-item">
+                            <input type="radio" name="teamType" value="independent" required />
+                            独立开发者
+                        </label>
+                    </div>
+                    <div class="hint">请选择您的团队身份</div>
+                </div>
             </div>
 
             <!-- 团队信息 -->
@@ -402,7 +462,6 @@
                 // 基础校验
                 const name = document.getElementById('name').value.trim();
                 const phone = document.getElementById('phone').value.trim();
-                const school = document.getElementById('school').value.trim();
                 const teamName = document.getElementById('teamName').value.trim();
                 const teamSize = document.getElementById('teamSize').value.trim();
                 const leaderName = document.getElementById('leaderName').value.trim();
@@ -410,9 +469,13 @@
                 const agreeContact = document.getElementById('agreeContact').checked;
                 const agreeDisplay = document.getElementById('agreeDisplay').checked;
 
+                // 团队属性（单选）
+                const teamTypeRadio = document.querySelector('input[name="teamType"]:checked');
+                const teamType = teamTypeRadio ? teamTypeRadio.value : '';
+
                 if (!name) { showToast('请填写姓名', 'error'); return; }
                 if (!phone || !/^1\d{10}$/.test(phone)) { showToast('请输入正确的11位手机号', 'error'); return; }
-                if (!school) { showToast('请填写所属院校', 'error'); return; }
+                if (!teamType) { showToast('请选择团队属性', 'error'); return; }
                 if (!teamName) { showToast('请填写团队名称', 'error'); return; }
                 if (!teamSize || parseInt(teamSize) < 1) { showToast('请填写有效的团队人数', 'error'); return; }
                 if (!leaderName) { showToast('请填写队长姓名', 'error'); return; }
@@ -437,8 +500,21 @@
 
                 // 构建数据
                 const formData = {
-                    personal: { name, phone, wechat: document.getElementById('wechat').value.trim(), qq: document.getElementById('qq').value.trim(), school },
-                    team: { name: teamName, size: parseInt(teamSize), leaderName, leaderPhone, intro: document.getElementById('teamIntro').value.trim(), members: membersData },
+                    personal: { 
+                        name, 
+                        phone, 
+                        wechat: document.getElementById('wechat').value.trim(), 
+                        qq: document.getElementById('qq').value.trim(), 
+                        teamType // 替换原来的 school
+                    },
+                    team: { 
+                        name: teamName, 
+                        size: parseInt(teamSize), 
+                        leaderName, 
+                        leaderPhone, 
+                        intro: document.getElementById('teamIntro').value.trim(), 
+                        members: membersData 
+                    },
                     expectation: document.getElementById('expectation').value.trim(),
                     agreements: { contact: agreeContact, display: agreeDisplay },
                     submittedAt: new Date().toISOString()
@@ -459,7 +535,6 @@
                 })
                 .then(response => {
                     if (!response.ok) {
-                        // 仅记录错误，不显示给用户
                         return response.text().then(text => console.error('Formspree 错误响应:', text));
                     }
                 })
@@ -469,7 +544,6 @@
                 .finally(() => {
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = '<i class="fas fa-check"></i> 已报名';
-                    // 统一显示成功提示
                     showToast('🎉 报名成功！', 'success');
                 });
 
