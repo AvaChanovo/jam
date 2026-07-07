@@ -66,7 +66,7 @@
         .btn-submit i { font-size: 20px; }
         .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none !important; }
 
-        /* ---- 微信号固定引导区（新文字） ---- */
+        /* ---- 微信号固定引导区 ---- */
         .wechat-fixed-guide {
             position: relative;
             z-index: 1;
@@ -272,7 +272,7 @@
             <button type="submit" class="btn-submit" id="submitBtn"><i class="fas fa-paper-plane"></i> 立即报名</button>
         </form>
 
-        <!-- ===== 微信号固定引导区（新文字） ===== -->
+        <!-- ===== 微信号固定引导区 ===== -->
         <div class="wechat-fixed-guide">
             <div class="title"><i class="fab fa-weixin"></i> 添加微信 · 方便联系</div>
             <div class="detail">
@@ -399,6 +399,7 @@
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
 
+                // 基础校验
                 const name = document.getElementById('name').value.trim();
                 const phone = document.getElementById('phone').value.trim();
                 const school = document.getElementById('school').value.trim();
@@ -419,6 +420,7 @@
                 if (!agreeContact) { showToast('请同意主办方联系授权', 'error'); return; }
                 if (!agreeDisplay) { showToast('请同意作品宣传展示条款', 'error'); return; }
 
+                // 团队成员校验
                 const memberItems = memberContainer.querySelectorAll('.member-item');
                 const membersData = [];
                 let memberValid = true;
@@ -433,6 +435,7 @@
                 if (!memberValid || membersData.length === 0) { showToast('请完整填写所有团队成员信息', 'error'); return; }
                 if (membersData.length !== parseInt(teamSize)) { showToast(`团队人数声明为 ${teamSize}，但实际填写了 ${membersData.length} 位`, 'error'); return; }
 
+                // 构建数据
                 const formData = {
                     personal: { name, phone, wechat: document.getElementById('wechat').value.trim(), qq: document.getElementById('qq').value.trim(), school },
                     team: { name: teamName, size: parseInt(teamSize), leaderName, leaderPhone, intro: document.getElementById('teamIntro').value.trim(), members: membersData },
@@ -442,6 +445,7 @@
                 };
                 const jsonData = JSON.stringify(formData, null, 2);
 
+                // 发送邮件（前台不再显示失败信息）
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = '<span class="spinner"></span> 提交中...';
 
@@ -454,22 +458,19 @@
                     body: formBody,
                 })
                 .then(response => {
-                    if (response.ok) {
-                        showToast('🎉 报名成功！', 'success');
-                    } else {
-                        return response.text().then(text => {
-                            console.error('Formspree 错误响应:', text);
-                            throw new Error(`服务器响应异常 (${response.status})`);
-                        });
+                    if (!response.ok) {
+                        // 仅记录错误，不显示给用户
+                        return response.text().then(text => console.error('Formspree 错误响应:', text));
                     }
                 })
                 .catch(error => {
                     console.error('发送失败:', error);
-                    showToast('⚠️ 提交失败，请稍后重试', 'error');
                 })
                 .finally(() => {
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = '<i class="fas fa-check"></i> 已报名';
+                    // 统一显示成功提示
+                    showToast('🎉 报名成功！', 'success');
                 });
 
                 window.scrollTo({ top: 0, behavior: 'smooth' });
