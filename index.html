@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>2026京喜造梦间Game Jam · 报名</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
-    <!-- 引入 QRCode.js 用于生成二维码 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         /* ===== 全局重置 & 基础 ===== */
@@ -13,7 +12,7 @@
         body {
             font-family: 'PingFang SC', 'Microsoft YaHei', -apple-system, BlinkMacSystemFont, sans-serif;
             background: #0b0e1a; color: #e8edf5; min-height: 100vh;
-            padding: 20px 16px 80px; /* 底部留出固定引导条的空间 */
+            padding: 20px 16px 40px;
             display: flex; flex-direction: column; align-items: center;
         }
         .container {
@@ -67,11 +66,45 @@
         .btn-submit i { font-size: 20px; }
         .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none !important; }
 
+        /* ---- 微信号固定引导区（新文字） ---- */
+        .wechat-fixed-guide {
+            position: relative;
+            z-index: 1;
+            margin-top: 24px;
+            padding: 16px 18px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            backdrop-filter: blur(4px);
+            text-align: center;
+            color: #e8edf5;
+            line-height: 1.8;
+        }
+        .wechat-fixed-guide .title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+        .wechat-fixed-guide .title i {
+            color: #07c160;
+            margin-right: 6px;
+        }
+        .wechat-fixed-guide .detail {
+            font-size: 15px;
+            color: rgba(255, 255, 255, 0.85);
+        }
+        .wechat-fixed-guide .detail .wechat-id {
+            font-weight: 700;
+            color: #07c160;
+            font-size: 16px;
+        }
+
         /* ---- 二维码分享区域 ---- */
         .share-qr {
             position: relative;
             z-index: 1;
-            margin: 20px 0 10px;
+            margin: 16px 0 10px;
             padding: 16px;
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.06);
@@ -107,43 +140,6 @@
             font-size: 12px;
             color: rgba(255, 255, 255, 0.3);
             margin-top: 10px;
-        }
-
-        /* ---- 固定底部引导条 ---- */
-        .bottom-guide {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            z-index: 999;
-            background: rgba(11, 14, 26, 0.92);
-            backdrop-filter: blur(12px);
-            border-top: 1px solid rgba(255, 255, 255, 0.08);
-            padding: 10px 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            font-size: 14px;
-            color: #e8edf5;
-            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.6);
-        }
-        .bottom-guide .icon {
-            font-size: 24px;
-            color: #07c160;
-            flex-shrink: 0;
-        }
-        .bottom-guide .text {
-            text-align: center;
-        }
-        .bottom-guide .text .wechat-id {
-            font-weight: 700;
-            color: #07c160;
-            letter-spacing: 0.5px;
-        }
-        .bottom-guide .text .label {
-            color: rgba(255, 255, 255, 0.6);
-            margin-right: 4px;
         }
 
         .footer {
@@ -194,12 +190,13 @@
             .member-item .member-row { flex-direction: column; gap: 4px; }
             .member-item .member-row .form-group { min-width: auto; }
             .btn-submit { font-size: 16px; padding: 14px; }
-            .bottom-guide { font-size: 13px; padding: 8px 12px; gap: 8px; }
-            .bottom-guide .icon { font-size: 20px; }
+            .wechat-fixed-guide { padding: 12px; }
+            .wechat-fixed-guide .title { font-size: 15px; }
+            .wechat-fixed-guide .detail { font-size: 14px; }
             #qrcode img, #qrcode canvas { width: 120px; height: 120px; }
         }
         @media (min-width: 600px) {
-            body { padding: 40px 20px 90px; }
+            body { padding: 40px 20px 50px; }
             .container { border-radius: 40px; padding: 32px 28px 36px; }
         }
 
@@ -212,16 +209,6 @@
 
     <!-- Toast 提示 -->
     <div id="toast" class="toast"><i class="fas fa-check-circle"></i><span id="toastMsg">报名成功！</span></div>
-
-    <!-- ===== 固定底部引导条 ===== -->
-    <div class="bottom-guide">
-        <div class="icon"><i class="fab fa-weixin"></i></div>
-        <div class="text">
-            <span class="label">📱 请添加微信号</span>
-            <span class="wechat-id">wxid_3r25h4jlbsy722</span>
-            <span style="color:rgba(255,255,255,0.5);"> 联系主办方</span>
-        </div>
-    </div>
 
     <div class="container">
         <div class="header">
@@ -285,6 +272,14 @@
             <button type="submit" class="btn-submit" id="submitBtn"><i class="fas fa-paper-plane"></i> 立即报名</button>
         </form>
 
+        <!-- ===== 微信号固定引导区（新文字） ===== -->
+        <div class="wechat-fixed-guide">
+            <div class="title"><i class="fab fa-weixin"></i> 添加微信 · 方便联系</div>
+            <div class="detail">
+                请添加微信号 <span class="wechat-id">wxid_3r25h4jlbsy722</span> 以便主办方与您沟通后续事宜。
+            </div>
+        </div>
+
         <!-- ===== 二维码分享区域 ===== -->
         <div class="share-qr">
             <div class="title"><i class="fas fa-qrcode"></i> 扫码分享报名页</div>
@@ -318,21 +313,18 @@
             // ---- 生成二维码 ----
             function generateQR() {
                 const qrContainer = document.getElementById('qrcode');
-                // 清空可能的旧内容
                 qrContainer.innerHTML = '';
                 const url = window.location.href;
-                // 使用 QRCode.js 生成
                 new QRCode(qrContainer, {
                     text: url,
                     width: 150,
                     height: 150,
                     colorDark: '#000000',
                     colorLight: '#ffffff',
-                    correctLevel: QRCode.CorrectLevel.H // 高容错
+                    correctLevel: QRCode.CorrectLevel.H
                 });
             }
 
-            // 页面加载完成后生成二维码
             if (document.readyState === 'loading') {
                 document.addEventListener('DOMContentLoaded', generateQR);
             } else {
@@ -388,7 +380,6 @@
                 memberContainer.appendChild(item);
                 item.scrollIntoView({ behavior: 'smooth', block: 'center' });
             });
-            // 第一位成员不可删除
             const firstRemove = memberContainer.querySelector('.remove-member');
             if (firstRemove) firstRemove.style.display = 'none';
 
@@ -408,7 +399,6 @@
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
 
-                // 基础校验
                 const name = document.getElementById('name').value.trim();
                 const phone = document.getElementById('phone').value.trim();
                 const school = document.getElementById('school').value.trim();
@@ -429,7 +419,6 @@
                 if (!agreeContact) { showToast('请同意主办方联系授权', 'error'); return; }
                 if (!agreeDisplay) { showToast('请同意作品宣传展示条款', 'error'); return; }
 
-                // 团队成员校验
                 const memberItems = memberContainer.querySelectorAll('.member-item');
                 const membersData = [];
                 let memberValid = true;
@@ -444,7 +433,6 @@
                 if (!memberValid || membersData.length === 0) { showToast('请完整填写所有团队成员信息', 'error'); return; }
                 if (membersData.length !== parseInt(teamSize)) { showToast(`团队人数声明为 ${teamSize}，但实际填写了 ${membersData.length} 位`, 'error'); return; }
 
-                // 构建数据
                 const formData = {
                     personal: { name, phone, wechat: document.getElementById('wechat').value.trim(), qq: document.getElementById('qq').value.trim(), school },
                     team: { name: teamName, size: parseInt(teamSize), leaderName, leaderPhone, intro: document.getElementById('teamIntro').value.trim(), members: membersData },
@@ -454,7 +442,6 @@
                 };
                 const jsonData = JSON.stringify(formData, null, 2);
 
-                // 发送邮件
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = '<span class="spinner"></span> 提交中...';
 
