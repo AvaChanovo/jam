@@ -5,13 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>2026京喜造梦间Game Jam · 报名</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <!-- 引入 QRCode.js 用于生成二维码 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         /* ===== 全局重置 & 基础 ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'PingFang SC', 'Microsoft YaHei', -apple-system, BlinkMacSystemFont, sans-serif;
             background: #0b0e1a; color: #e8edf5; min-height: 100vh;
-            padding: 20px 16px 40px; display: flex; flex-direction: column; align-items: center;
+            padding: 20px 16px 80px; /* 底部留出固定引导条的空间 */
+            display: flex; flex-direction: column; align-items: center;
         }
         .container {
             max-width: 480px; width: 100%; background: linear-gradient(145deg, #131a2b, #1a2338);
@@ -64,55 +67,88 @@
         .btn-submit i { font-size: 20px; }
         .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none !important; }
 
-        /* ---- 固定微信号引导区 ---- */
-        .wechat-guide {
+        /* ---- 二维码分享区域 ---- */
+        .share-qr {
             position: relative;
             z-index: 1;
-            margin-top: 24px;
-            padding: 16px 18px;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            margin: 20px 0 10px;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
             border-radius: 16px;
-            backdrop-filter: blur(4px);
+            text-align: center;
+        }
+        .share-qr .title {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 12px;
             display: flex;
             align-items: center;
-            gap: 14px;
-            color: #e8edf5;
-            font-size: 15px;
-            line-height: 1.6;
+            justify-content: center;
+            gap: 8px;
         }
-        .wechat-guide .icon {
-            font-size: 28px;
-            color: #07c160; /* 微信绿 */
+        .share-qr .title i {
+            color: #a855f7;
+        }
+        #qrcode {
+            display: inline-block;
+            background: #fff;
+            padding: 8px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+        #qrcode img,
+        #qrcode canvas {
+            display: block;
+            width: 150px;
+            height: 150px;
+        }
+        .share-qr .hint {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.3);
+            margin-top: 10px;
+        }
+
+        /* ---- 固定底部引导条 ---- */
+        .bottom-guide {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 999;
+            background: rgba(11, 14, 26, 0.92);
+            backdrop-filter: blur(12px);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            font-size: 14px;
+            color: #e8edf5;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.6);
+        }
+        .bottom-guide .icon {
+            font-size: 24px;
+            color: #07c160;
             flex-shrink: 0;
         }
-        .wechat-guide .text {
-            flex: 1;
+        .bottom-guide .text {
+            text-align: center;
         }
-        .wechat-guide .text strong {
-            color: #fff;
-            font-weight: 600;
-            background: rgba(7, 193, 96, 0.15);
-            padding: 2px 8px;
-            border-radius: 6px;
-            letter-spacing: 0.5px;
-        }
-        .wechat-guide .text .wechat-id {
+        .bottom-guide .text .wechat-id {
             font-weight: 700;
             color: #07c160;
-            font-size: 16px;
+            letter-spacing: 0.5px;
+        }
+        .bottom-guide .text .label {
+            color: rgba(255, 255, 255, 0.6);
+            margin-right: 4px;
         }
 
         .footer {
-            position: relative;
-            z-index: 1;
-            text-align: center;
-            margin-top: 20px;
-            padding-top: 16px;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
-            font-size: 12px;
-            color: rgba(255, 255, 255, 0.25);
-            letter-spacing: 0.5px;
+            position: relative; z-index: 1; text-align: center; margin-top: 20px; padding-top: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05); font-size: 12px; color: rgba(255, 255, 255, 0.25); letter-spacing: 0.5px;
         }
         .footer .org { color: rgba(255, 255, 255, 0.40); font-weight: 500; }
         .footer i { color: #ff6b9d; margin: 0 4px; }
@@ -131,7 +167,7 @@
             font-size: 14px;
             font-weight: 500;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
-            z-index: 999;
+            z-index: 1000;
             transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease;
             opacity: 0;
             pointer-events: none;
@@ -158,11 +194,12 @@
             .member-item .member-row { flex-direction: column; gap: 4px; }
             .member-item .member-row .form-group { min-width: auto; }
             .btn-submit { font-size: 16px; padding: 14px; }
-            .wechat-guide { font-size: 14px; padding: 14px; flex-wrap: wrap; justify-content: center; text-align: center; }
-            .wechat-guide .icon { font-size: 24px; }
+            .bottom-guide { font-size: 13px; padding: 8px 12px; gap: 8px; }
+            .bottom-guide .icon { font-size: 20px; }
+            #qrcode img, #qrcode canvas { width: 120px; height: 120px; }
         }
         @media (min-width: 600px) {
-            body { padding: 40px 20px; }
+            body { padding: 40px 20px 90px; }
             .container { border-radius: 40px; padding: 32px 28px 36px; }
         }
 
@@ -173,8 +210,18 @@
 </head>
 <body>
 
-    <!-- Toast 提示（仅显示简要状态，不含微信号） -->
+    <!-- Toast 提示 -->
     <div id="toast" class="toast"><i class="fas fa-check-circle"></i><span id="toastMsg">报名成功！</span></div>
+
+    <!-- ===== 固定底部引导条 ===== -->
+    <div class="bottom-guide">
+        <div class="icon"><i class="fab fa-weixin"></i></div>
+        <div class="text">
+            <span class="label">📱 请添加微信号</span>
+            <span class="wechat-id">wxid_3r25h4jlbsy722</span>
+            <span style="color:rgba(255,255,255,0.5);"> 联系主办方</span>
+        </div>
+    </div>
 
     <div class="container">
         <div class="header">
@@ -238,13 +285,11 @@
             <button type="submit" class="btn-submit" id="submitBtn"><i class="fas fa-paper-plane"></i> 立即报名</button>
         </form>
 
-        <!-- ===== 固定微信号引导区（始终可见） ===== -->
-        <div class="wechat-guide">
-            <div class="icon"><i class="fab fa-weixin"></i></div>
-            <div class="text">
-                <strong>添加微信 · 方便联系</strong><br />
-                请添加微信号 <span class="wechat-id">wxid_3r25h4jlbsy722</span> 以便主办方与您沟通后续事宜。
-            </div>
+        <!-- ===== 二维码分享区域 ===== -->
+        <div class="share-qr">
+            <div class="title"><i class="fas fa-qrcode"></i> 扫码分享报名页</div>
+            <div id="qrcode"></div>
+            <div class="hint">长按或截图保存二维码，分享给朋友</div>
         </div>
 
         <div class="footer">
@@ -257,7 +302,6 @@
         (function() {
             'use strict';
 
-            // 配置区：Formspree 端点
             const CONFIG = {
                 formspreeEndpoint: 'https://formspree.io/f/mzdloonq'
             };
@@ -271,7 +315,31 @@
             const introText = document.getElementById('teamIntro');
             const introCount = document.getElementById('introCount');
 
-            // 倒计时
+            // ---- 生成二维码 ----
+            function generateQR() {
+                const qrContainer = document.getElementById('qrcode');
+                // 清空可能的旧内容
+                qrContainer.innerHTML = '';
+                const url = window.location.href;
+                // 使用 QRCode.js 生成
+                new QRCode(qrContainer, {
+                    text: url,
+                    width: 150,
+                    height: 150,
+                    colorDark: '#000000',
+                    colorLight: '#ffffff',
+                    correctLevel: QRCode.CorrectLevel.H // 高容错
+                });
+            }
+
+            // 页面加载完成后生成二维码
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', generateQR);
+            } else {
+                generateQR();
+            }
+
+            // ---- 倒计时 ----
             function updateCountdown() {
                 const target = new Date('2026-08-26T16:00:00+08:00').getTime();
                 const now = Date.now();
@@ -287,14 +355,14 @@
             updateCountdown();
             setInterval(updateCountdown, 1000);
 
-            // 简介字数
+            // ---- 简介字数 ----
             introText.addEventListener('input', function() {
                 const len = this.value.length;
                 introCount.textContent = `${len} / 200`;
                 if (len > 200) { this.value = this.value.slice(0, 200); introCount.textContent = '200 / 200'; }
             });
 
-            // 成员管理
+            // ---- 成员管理 ----
             let memberIndex = 1;
             function createMemberItem(index) {
                 const div = document.createElement('div');
@@ -324,7 +392,7 @@
             const firstRemove = memberContainer.querySelector('.remove-member');
             if (firstRemove) firstRemove.style.display = 'none';
 
-            // Toast
+            // ---- Toast ----
             let toastTimer = null;
             function showToast(msg, type = 'success') {
                 const icon = toast.querySelector('i');
@@ -336,11 +404,11 @@
                 toastTimer = setTimeout(() => { toast.classList.remove('show'); }, 5000);
             }
 
-            // 提交
+            // ---- 提交 ----
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
 
-                // ---- 基础校验 ----
+                // 基础校验
                 const name = document.getElementById('name').value.trim();
                 const phone = document.getElementById('phone').value.trim();
                 const school = document.getElementById('school').value.trim();
@@ -361,7 +429,7 @@
                 if (!agreeContact) { showToast('请同意主办方联系授权', 'error'); return; }
                 if (!agreeDisplay) { showToast('请同意作品宣传展示条款', 'error'); return; }
 
-                // ---- 团队成员校验 ----
+                // 团队成员校验
                 const memberItems = memberContainer.querySelectorAll('.member-item');
                 const membersData = [];
                 let memberValid = true;
@@ -376,7 +444,7 @@
                 if (!memberValid || membersData.length === 0) { showToast('请完整填写所有团队成员信息', 'error'); return; }
                 if (membersData.length !== parseInt(teamSize)) { showToast(`团队人数声明为 ${teamSize}，但实际填写了 ${membersData.length} 位`, 'error'); return; }
 
-                // ---- 构建数据 ----
+                // 构建数据
                 const formData = {
                     personal: { name, phone, wechat: document.getElementById('wechat').value.trim(), qq: document.getElementById('qq').value.trim(), school },
                     team: { name: teamName, size: parseInt(teamSize), leaderName, leaderPhone, intro: document.getElementById('teamIntro').value.trim(), members: membersData },
@@ -386,7 +454,7 @@
                 };
                 const jsonData = JSON.stringify(formData, null, 2);
 
-                // ---- 发送邮件 ----
+                // 发送邮件
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = '<span class="spinner"></span> 提交中...';
 
