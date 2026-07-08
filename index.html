@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
-        /* ===== 全局滚动修复 ===== */
+        /* ===== 全局滚动修复 + 移动端居中 ===== */
         html, body {
             height: 100%;
             margin: 0;
@@ -20,19 +20,21 @@
             background: #0b0e1a;
             color: #e8edf5;
             padding: 20px 16px 40px;
-            /* 居中容器，但不影响内部块级元素 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
         }
         .container {
             max-width: 480px;
             width: 100%;
-            margin: 0 auto;
             background: linear-gradient(145deg, #131a2b, #1a2338);
             border-radius: 32px;
             padding: 24px 20px 32px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.06);
             border: 1px solid rgba(255, 255, 255, 0.04);
             position: relative;
-            overflow: hidden; /* 仅用于装饰 */
+            overflow: hidden;
         }
         .container::before,
         .container::after {
@@ -57,7 +59,7 @@
             background: radial-gradient(circle, rgba(255, 70, 150, 0.10) 0%, transparent 70%);
         }
 
-        /* ===== 关键：强制所有输入框垂直排列 ===== */
+        /* ===== 强制所有输入框垂直排列 ===== */
         form {
             display: block !important;
             width: 100% !important;
@@ -165,7 +167,7 @@
             background: #fff;
         }
 
-        /* ---- 团队成员列表（内部 flex 不影响外部） ---- */
+        /* ---- 团队成员列表 ---- */
         .member-list {
             display: flex;
             flex-direction: column;
@@ -186,13 +188,12 @@
             gap: 10px;
             flex-wrap: wrap;
         }
-        /* 成员内部的 .form-group 依然保持块级，但 flex 会控制宽度，所以需要重置 */
         .member-item .member-row .form-group {
             flex: 1;
             min-width: 100px;
             margin-bottom: 8px;
-            display: block !important; /* 覆盖 flex 影响 */
-            width: auto !important; /* 让 flex 控制宽度 */
+            display: block !important;
+            width: auto !important;
             clear: none !important;
         }
         .member-item .member-row .form-group label {
@@ -241,11 +242,17 @@
             font-family: inherit;
             backdrop-filter: blur(4px);
         }
-        .btn-add-member:hover {
+        .btn-add-member:hover:not(:disabled) {
             background: rgba(168, 85, 247, 0.20);
             border-color: #a855f7;
             color: #fff;
             transform: translateY(-1px);
+        }
+        .btn-add-member:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            color: rgba(255, 255, 255, 0.4);
+            border-color: rgba(255, 255, 255, 0.1);
         }
 
         /* ---- 复选框 ---- */
@@ -583,7 +590,6 @@
             letter-spacing: 0.3px;
         }
 
-        /* 头部样式 */
         .header {
             text-align: center;
             margin-bottom: 28px;
@@ -723,7 +729,7 @@
                 </div>
 
                 <div style="margin-top: 8px;">
-                    <label style="font-size:13px;font-weight:500;color:rgba(255,255,255,0.7);display:block;margin-bottom:8px;">团队成员 <span class="required">*</span></label>
+                    <label style="font-size:13px;font-weight:500;color:rgba(255,255,255,0.7);display:block;margin-bottom:8px;">团队成员 <span class="required">*</span>（最多5人）</label>
                     <div id="memberContainer" class="member-list">
                         <div class="member-item" data-index="0">
                             <div class="member-row">
@@ -786,6 +792,7 @@
             const CONFIG = {
                 formspreeEndpoint: 'https://formspree.io/f/mzdloonq'
             };
+            const MAX_MEMBERS = 5; // 最多5人
 
             const form = document.getElementById('signupForm');
             const toast = document.getElementById('toast');
@@ -839,6 +846,18 @@
                 if (len > 200) { this.value = this.value.slice(0, 200); introCount.textContent = '200 / 200'; }
             });
 
+            // ---- 更新添加按钮状态 ----
+            function updateAddButton() {
+                const count = memberContainer.children.length;
+                if (count >= MAX_MEMBERS) {
+                    addMemberBtn.disabled = true;
+                    addMemberBtn.innerHTML = '<i class="fas fa-user-plus"></i> 已达上限 (5人)';
+                } else {
+                    addMemberBtn.disabled = false;
+                    addMemberBtn.innerHTML = '<i class="fas fa-user-plus"></i> 添加成员';
+                }
+            }
+
             // ---- 成员管理 ----
             let memberIndex = 1;
             function createMemberItem(index) {
@@ -855,16 +874,31 @@
                 `;
                 const removeBtn = div.querySelector('.remove-member');
                 removeBtn.addEventListener('click', function() {
-                    if (memberContainer.children.length <= 1) { showToast('至少保留一位成员', 'error'); return; }
+                    if (memberContainer.children.length <= 1) {
+                        showToast('至少保留一位成员', 'error');
+                        return;
+                    }
                     div.remove();
+                    updateAddButton(); // 更新按钮状态
                 });
                 return div;
             }
+
             addMemberBtn.addEventListener('click', function() {
+                const count = memberContainer.children.length;
+                if (count >= MAX_MEMBERS) {
+                    showToast(`团队成员最多 ${MAX_MEMBERS} 人`, 'error');
+                    return;
+                }
                 const item = createMemberItem(memberIndex++);
                 memberContainer.appendChild(item);
-                // 不自动滚动，避免干扰
+                updateAddButton();
             });
+
+            // 初始更新按钮状态
+            updateAddButton();
+
+            // 第一位成员不可删除
             const firstRemove = memberContainer.querySelector('.remove-member');
             if (firstRemove) firstRemove.style.display = 'none';
 
