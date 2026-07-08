@@ -7,24 +7,22 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
-        /* ===== 全局滚动修复 + 移动端居中 ===== */
-        html, body {
-            height: 100%;
-            margin: 0;
-            padding: 0;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-        }
+        /* ===== 全局重置 ===== */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        /* 滚动由 body 自然处理，不限制高度 */
         body {
             font-family: 'PingFang SC', 'Microsoft YaHei', -apple-system, BlinkMacSystemFont, sans-serif;
             background: #0b0e1a;
             color: #e8edf5;
+            min-height: 100vh; /* 至少占满视口，但不限制 */
             padding: 20px 16px 40px;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
+            align-items: center; /* 水平居中 */
+            /* 无 overflow 设置，浏览器默认滚动 */
         }
+
         .container {
             max-width: 480px;
             width: 100%;
@@ -34,7 +32,7 @@
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.06);
             border: 1px solid rgba(255, 255, 255, 0.04);
             position: relative;
-            overflow: hidden;
+            overflow: hidden; /* 仅用于装饰 */
         }
         .container::before,
         .container::after {
@@ -792,7 +790,7 @@
             const CONFIG = {
                 formspreeEndpoint: 'https://formspree.io/f/mzdloonq'
             };
-            const MAX_MEMBERS = 5; // 最多5人
+            const MAX_MEMBERS = 5;
 
             const form = document.getElementById('signupForm');
             const toast = document.getElementById('toast');
@@ -879,7 +877,7 @@
                         return;
                     }
                     div.remove();
-                    updateAddButton(); // 更新按钮状态
+                    updateAddButton();
                 });
                 return div;
             }
@@ -895,7 +893,7 @@
                 updateAddButton();
             });
 
-            // 初始更新按钮状态
+            // 初始更新
             updateAddButton();
 
             // 第一位成员不可删除
