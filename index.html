@@ -7,32 +7,33 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
-        /* ===== 全局重置 ===== */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        html {
+        /* ===== 全局滚动修复 ===== */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
         }
         body {
-            min-height: 100vh;
             font-family: 'PingFang SC', 'Microsoft YaHei', -apple-system, BlinkMacSystemFont, sans-serif;
             background: #0b0e1a;
             color: #e8edf5;
             padding: 20px 16px 40px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            text-align: center; /* 用于居中容器 */
         }
         .container {
             max-width: 480px;
             width: 100%;
+            margin: 0 auto; /* 居中 */
             background: linear-gradient(145deg, #131a2b, #1a2338);
             border-radius: 32px;
             padding: 24px 20px 32px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.06);
             border: 1px solid rgba(255, 255, 255, 0.04);
             position: relative;
-            overflow: hidden;
+            overflow: hidden; /* 仅用于装饰，不影响滚动 */
+            text-align: left; /* 恢复内部文字左对齐 */
         }
         .container::before,
         .container::after {
@@ -123,7 +124,7 @@
             font-weight: 700;
         }
 
-        /* ---- 表单核心修复：确保每个字段独立成行 ---- */
+        /* ---- 表单核心 ---- */
         .form-section {
             position: relative;
             z-index: 1;
@@ -209,7 +210,7 @@
             line-height: 1.6;
         }
 
-        /* ---- 单选按钮组（身份属性） ---- */
+        /* ---- 单选按钮 ---- */
         .radio-group {
             display: flex;
             gap: 20px;
@@ -254,7 +255,7 @@
             background: #fff;
         }
 
-        /* ---- 团队成员列表 ---- */
+        /* ---- 团队成员 ---- */
         .member-list {
             display: flex;
             flex-direction: column;
@@ -421,7 +422,7 @@
             transform: none !important;
         }
 
-        /* ---- 微信号固定引导区 ---- */
+        /* ---- 微信号引导 ---- */
         .wechat-fixed-guide {
             position: relative;
             z-index: 1;
@@ -455,7 +456,7 @@
             font-size: 16px;
         }
 
-        /* ---- 二维码分享区域 ---- */
+        /* ---- 二维码 ---- */
         .share-qr {
             position: relative;
             z-index: 1;
@@ -852,13 +853,14 @@
                 removeBtn.addEventListener('click', function() {
                     if (memberContainer.children.length <= 1) { showToast('至少保留一位成员', 'error'); return; }
                     div.remove();
+                    // 移除后不自动滚动，由用户控制
                 });
                 return div;
             }
             addMemberBtn.addEventListener('click', function() {
                 const item = createMemberItem(memberIndex++);
                 memberContainer.appendChild(item);
-                item.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                // 取消自动滚动，避免干扰用户滚动操作
             });
             const firstRemove = memberContainer.querySelector('.remove-member');
             if (firstRemove) firstRemove.style.display = 'none';
